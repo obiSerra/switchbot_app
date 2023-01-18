@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sam local start-api
+sam local start-api -n env.json

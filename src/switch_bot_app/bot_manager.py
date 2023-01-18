@@ -1,4 +1,6 @@
 import json
+
+from aws_lambda_powertools import Logger
 from switch_bot_app.errors import CommandNotSupportedError, UnauthorizedError
 from switch_bot_app.autentication import authenticate, AuthData
 
@@ -9,10 +11,14 @@ import logging
 BASE_URL = "https://api.switch-bot.com"
 
 
+logger = Logger()
+
+
 def parse_request(r):
     response = r.json()
+    logger.info(response)
 
-    if response["statusCode"] == 401:
+    if r.status_code == 401:
         raise UnauthorizedError(f"Unauthorized request to {r.url}")
     elif response["statusCode"] == 160:
         logging.error(response)

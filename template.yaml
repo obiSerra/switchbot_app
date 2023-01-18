@@ -6,9 +6,11 @@ Description: >
 Parameters:
   SWITCHBOTTOKEN:
     Type: String
+    Default: ""
 
   SWITCHBOTSECRET:
     Type: String
+    Default: ""
 
 Metadata:
   AWS::ServerlessRepo::Application:
@@ -22,37 +24,35 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: dev
+      Auth:
+        DefaultAuthorizer: NONE
       Cors:
         AllowMethods: "'OPTIONS, GET'"
-        AllowHeaders: "'Authentication'"
         AllowOrigin: "'*'"
         MaxAge: "'600'"
         AllowCredentials: False
-      Auth:
-        DefaultAuthorizer: NONE
 
   SwitchBotTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: SwitchBotTriggerFunction
+      Timeout: 30
       CodeUri: src
-      Handler: switch_bot_app.app.lambda_handler
+      Handler: switch_bot_app.main.lambda_handler
       Runtime: python3.9
       Environment:
         Variables:
           LOG_LEVEL: INFO
           POWERTOOLS_SERVICE_NAME: SwitchBotTriggerFunction
-          SWITCHBOT_TOKEN: SWITCHBOTTOKEN
-          SWITCHBOT_SECRET: SWITCHBOTSECRET
+          SWITCHBOT_TOKEN: !Ref SWITCHBOTTOKEN
+          SWITCHBOT_SECRET: !Ref SWITCHBOTSECRET
       Role: !GetAtt LoggingRole.Arn
       Events:
         GetDevices:
           Type: Api
           Properties:
-            Auth:
-              Authorizer: NONE
             Path: /devices
-            Method: get, options
+            Method: GET
             RestApiId:
               Ref: SwitchBotGatewayApi
 

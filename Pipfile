@@ -6,12 +6,14 @@ name = "pypi"
 [packages]
 switch-bot-app = {editable = true, path = "."}
 requests = "*"
+urllib3 = {editable = true, path = "."}
+aws-lambda-powertools = "*"
 
 [dev-packages]
 black = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [pipenv]
 allow_prereleases = true
