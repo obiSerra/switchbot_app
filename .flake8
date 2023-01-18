@@ -1,0 +1,8 @@
+[flake8]
+exclude = .*
+application-import-names = switch_bot_app
+docstring-convention = google
+import-order-style = pycharm
+max-line-length = 128
+per-file-ignores =
+    tests/unit/*:D103,D100
