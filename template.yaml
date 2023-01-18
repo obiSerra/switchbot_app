@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SWITCHBOT Cloud Web API
+
+Parameters:
+  SWITCHBOTTOKEN:
+    Type: String
+
+  SWITCHBOTSECRET:
+    Type: String
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: SwitchBotCloudWebApi
+    Description: SwitchBot Cloud Web API
+    Author: Roberto Serra
+    SemanticVersion: 0.1.0
+
+Resources:
+  SwitchBotGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'OPTIONS, GET'"
+        AllowHeaders: "'Authentication'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+        AllowCredentials: False
+      Auth:
+        DefaultAuthorizer: NONE
+
+  SwitchBotTriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SwitchBotTriggerFunction
+      CodeUri: src
+      Handler: switch_bot_app.app.lambda_handler
+      Runtime: python3.9
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
+          POWERTOOLS_SERVICE_NAME: SwitchBotTriggerFunction
+          SWITCHBOT_TOKEN: SWITCHBOTTOKEN
+          SWITCHBOT_SECRET: SWITCHBOTSECRET
+      Role: !GetAtt LoggingRole.Arn
+      Events:
+        GetDevices:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            Path: /devices
+            Method: get, options
+            RestApiId:
+              Ref: SwitchBotGatewayApi
+
+  ApiGwAccountConfig:
+    Type: "AWS::ApiGateway::Account"
+    Properties:
+      CloudWatchRoleArn: !GetAtt "LoggingRole.Arn"
+
+  LoggingRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+
+Outputs:
+  ApiGatewayUrl:
+    Description: "API Gateway Url"
+    Value: !Sub "https://${SwitchBotGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
