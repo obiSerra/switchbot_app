@@ -46,7 +46,7 @@ Resources:
           POWERTOOLS_SERVICE_NAME: SwitchBotTriggerFunction
           SWITCHBOT_TOKEN: !Ref SWITCHBOTTOKEN
           SWITCHBOT_SECRET: !Ref SWITCHBOTSECRET
-      Role: !GetAtt LoggingRole.Arn
+      Role: !GetAtt SwitchBotTriggerRole.Arn
       Events:
         GetDevices:
           Type: Api
@@ -55,11 +55,44 @@ Resources:
             Method: GET
             RestApiId:
               Ref: SwitchBotGatewayApi
+        TriggerBot:
+          Type: Api
+          Properties:
+            Path: /trigger/{device_id}/press
+            Method: get
+            RequestParameters:
+              - method.request.path.device_id
+            RestApiId:
+              Ref: SwitchBotGatewayApi
 
   ApiGwAccountConfig:
     Type: "AWS::ApiGateway::Account"
     Properties:
       CloudWatchRoleArn: !GetAtt "LoggingRole.Arn"
+
+  SwitchBotTriggerRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: StandardLambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
 
   LoggingRole:
     Type: "AWS::IAM::Role"

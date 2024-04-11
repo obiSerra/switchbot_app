@@ -37,11 +37,20 @@ if secret is None:
 
 @app.get("/devices")
 def get_devices():
-    logger.info("Get Devices", extra={"token": token, "secret": secret})
+    # logger.info("Get Devices", extra={"token": token, "secret": secret})
     bot_manager = BotManager(token, secret)
     devices = bot_manager.get_device_list()
     # logger.info("Get Devices", extra={"devices": devices})
     return devices
+
+
+@app.get("/trigger/<device_id>/press")
+def press_device(device_id):
+    # logger.info("Press device", extra={"token": token, "secret": secret})
+    bot_manager = BotManager(token, secret)
+    citofono_bot = bot_manager.get_device_by_id(device_id)
+    # logger.info("Get Devices", extra={"devices": devices})
+    return citofono_bot.press()
 
 
 def lambda_handler(event, context):

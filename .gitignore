@@ -3,3 +3,4 @@ build
 env_variables
 .aws-sam/
 env.json
+samconfig.toml

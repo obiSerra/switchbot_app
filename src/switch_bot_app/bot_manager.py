@@ -69,22 +69,6 @@ class Bot(Device):
         return self.command(command)
 
 
-def make_request(token, sign, nonce, t, body):
-    device_id = "D7:FC:3F:CE:0A:7A"
-    base_url = "https://api.switch-bot.com"
-    path = f"/v1.1/devices/{device_id}/commands"
-    headers = {
-        "Authorization": token,
-        "sign": sign,
-        "nonce": nonce,
-        "t": t,
-        "Content-Type": "application/json",
-        "Content-Length": len(body),
-    }
-    r = requests.post(base_url + path, headers=headers, data=body)
-    return r
-
-
 class BotManager:
     def __init__(self, token, secret) -> None:
         self.auth_data: AuthData = authenticate(token, secret)
